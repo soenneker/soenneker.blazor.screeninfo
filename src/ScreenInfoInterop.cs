@@ -1,0 +1,55 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.JSInterop;
+using Soenneker.Blazor.ScreenInfo.Abstract;
+using Soenneker.Blazor.ScreenInfo.Dtos;
+using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
+using Soenneker.Extensions.ValueTask;
+using Soenneker.Utils.AsyncSingleton;
+
+namespace Soenneker.Blazor.ScreenInfo;
+
+///<inheritdoc cref="IScreenInfoInterop"/>
+public class ScreenInfoInterop : IScreenInfoInterop
+{
+    private readonly IJSRuntime _jsRuntime;
+    private readonly IResourceLoader _resourceLoader;
+
+    private readonly AsyncSingleton _scriptInitializer;
+
+    private const string _modulePath = "Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
+    private const string _moduleNamespace = "ScreenInfoInterop";
+
+    public ScreenInfoInterop(IJSRuntime jSRuntime, IResourceLoader resourceLoader)
+    {
+        _jsRuntime = jSRuntime;
+        _resourceLoader = resourceLoader;
+
+        _scriptInitializer = new AsyncSingleton(async (token, obj) =>
+        {
+            await _resourceLoader.ImportModuleAndWaitUntilAvailable(_modulePath, _moduleNamespace, 100, token).NoSync();
+            return new object();
+        });
+    }
+
+    public async ValueTask Warmup(CancellationToken cancellationToken = default)
+    {
+        await _scriptInitializer.Init(cancellationToken).NoSync();
+    }
+
+    public async ValueTask<ScreenInfoDto> Get(CancellationToken cancellationToken = default)
+    {
+        await _scriptInitializer.Init(cancellationToken).NoSync();
+
+        return await _jsRuntime.InvokeAsync<ScreenInfoDto>($"{_moduleNamespace}.get", cancellationToken).NoSync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+
+        await _resourceLoader.DisposeModule(_modulePath).NoSync();
+        await _scriptInitializer.DisposeAsync().NoSync();
+    }
+}
