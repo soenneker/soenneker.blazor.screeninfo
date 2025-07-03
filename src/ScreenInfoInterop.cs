@@ -11,7 +11,7 @@ using Soenneker.Utils.AsyncSingleton;
 namespace Soenneker.Blazor.ScreenInfo;
 
 ///<inheritdoc cref="IScreenInfoInterop"/>
-public class ScreenInfoInterop : IScreenInfoInterop
+public sealed class ScreenInfoInterop : IScreenInfoInterop
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly IResourceLoader _resourceLoader;
@@ -47,8 +47,6 @@ public class ScreenInfoInterop : IScreenInfoInterop
 
     public async ValueTask DisposeAsync()
     {
-        GC.SuppressFinalize(this);
-
         await _resourceLoader.DisposeModule(_modulePath).NoSync();
         await _scriptInitializer.DisposeAsync().NoSync();
     }
