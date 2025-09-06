@@ -28,26 +28,26 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
 
         _scriptInitializer = new AsyncSingleton(async (token, obj) =>
         {
-            await _resourceLoader.ImportModuleAndWaitUntilAvailable(_modulePath, _moduleNamespace, 100, token).NoSync();
+            await _resourceLoader.ImportModuleAndWaitUntilAvailable(_modulePath, _moduleNamespace, 100, token);
             return new object();
         });
     }
 
     public async ValueTask Warmup(CancellationToken cancellationToken = default)
     {
-        await _scriptInitializer.Init(cancellationToken).NoSync();
+        await _scriptInitializer.Init(cancellationToken);
     }
 
     public async ValueTask<ScreenInfoDto> Get(CancellationToken cancellationToken = default)
     {
-        await _scriptInitializer.Init(cancellationToken).NoSync();
+        await _scriptInitializer.Init(cancellationToken);
 
-        return await _jsRuntime.InvokeAsync<ScreenInfoDto>($"{_moduleNamespace}.get", cancellationToken).NoSync();
+        return await _jsRuntime.InvokeAsync<ScreenInfoDto>($"{_moduleNamespace}.get", cancellationToken);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _resourceLoader.DisposeModule(_modulePath).NoSync();
-        await _scriptInitializer.DisposeAsync().NoSync();
+        await _resourceLoader.DisposeModule(_modulePath);
+        await _scriptInitializer.DisposeAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Soenneker.Blazor.ScreenInfo.Abstract;
+using Soenneker.Blazor.ScreenInfo.Abstract;
 using Soenneker.Tests.FixturedUnit;
 using Xunit;
 
