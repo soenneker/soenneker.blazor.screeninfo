@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Soenneker.Blazor.ScreenInfo.Dtos;
 
-public record ScreenInfoDto
+public sealed record ScreenInfoDto
 {
     [JsonPropertyName("width")]
     public int Width { get; set; }
