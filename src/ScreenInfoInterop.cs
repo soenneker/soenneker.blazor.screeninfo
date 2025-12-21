@@ -6,7 +6,7 @@ using Soenneker.Blazor.ScreenInfo.Abstract;
 using Soenneker.Blazor.ScreenInfo.Dtos;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
 using Soenneker.Extensions.ValueTask;
-using Soenneker.Utils.AsyncSingleton;
+using Soenneker.Asyncs.Initializers;
 
 namespace Soenneker.Blazor.ScreenInfo;
 
@@ -16,7 +16,7 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
     private readonly IJSRuntime _jsRuntime;
     private readonly IResourceLoader _resourceLoader;
 
-    private readonly AsyncSingleton _scriptInitializer;
+    private readonly AsyncInitializer _scriptInitializer;
 
     private const string _modulePath = "Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
     private const string _moduleNamespace = "ScreenInfoInterop";
@@ -26,10 +26,9 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
         _jsRuntime = jSRuntime;
         _resourceLoader = resourceLoader;
 
-        _scriptInitializer = new AsyncSingleton(async (token, obj) =>
+        _scriptInitializer = new AsyncInitializer(async token =>
         {
             await _resourceLoader.ImportModuleAndWaitUntilAvailable(_modulePath, _moduleNamespace, 100, token);
-            return new object();
         });
     }
 
