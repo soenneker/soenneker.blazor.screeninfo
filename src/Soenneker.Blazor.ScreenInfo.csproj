@@ -14,7 +14,7 @@
         <AssemblyName>Soenneker.Blazor.ScreenInfo</AssemblyName>
         <PackageId>Soenneker.Blazor.ScreenInfo</PackageId>
         <PackageTags>blazor screeninfo screen information browser js screeninfointerop interop csharp dotnet c# .net</PackageTags>
-        <Copyright>Copyright © 2025 Jake Soenneker</Copyright>
+        <Copyright>Copyright © 2025-2026 Jake Soenneker</Copyright>
         <Authors>Jake Soenneker</Authors>
         <Company>https://soenneker.com</Company>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
