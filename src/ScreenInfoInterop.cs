@@ -1,10 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
+using Soenneker.Asyncs.Initializers;
 using Soenneker.Blazor.ScreenInfo.Abstract;
 using Soenneker.Blazor.ScreenInfo.Dtos;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
-using Soenneker.Asyncs.Initializers;
+using Soenneker.Extensions.CancellationTokens;
+using Soenneker.Utils.CancellationScopes;
 
 namespace Soenneker.Blazor.ScreenInfo;
 
@@ -18,6 +20,8 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
 
     private const string _modulePath = "Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
     private const string _moduleNamespace = "ScreenInfoInterop";
+
+    private readonly CancellationScope _cancellationScope = new();
 
     public ScreenInfoInterop(IJSRuntime jSRuntime, IResourceLoader resourceLoader)
     {
@@ -33,19 +37,27 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
 
     public ValueTask Warmup(CancellationToken cancellationToken = default)
     {
-        return _scriptInitializer.Init(cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _scriptInitializer.Init(linked);
     }
 
     public async ValueTask<ScreenInfoDto> Get(CancellationToken cancellationToken = default)
     {
-        await _scriptInitializer.Init(cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        return await _jsRuntime.InvokeAsync<ScreenInfoDto>("ScreenInfoInterop.get", cancellationToken);
+        using (source)
+        {
+            await _scriptInitializer.Init(linked);
+            return await _jsRuntime.InvokeAsync<ScreenInfoDto>("ScreenInfoInterop.get", linked);
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
         await _resourceLoader.DisposeModule(_modulePath);
         await _scriptInitializer.DisposeAsync();
+        await _cancellationScope.DisposeAsync();
     }
 }
