@@ -35,12 +35,12 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
         return _resourceLoader.ImportModuleAndWaitUntilAvailable(_modulePath, _moduleNamespace, 100, token);
     }
 
-    public ValueTask Warmup(CancellationToken cancellationToken = default)
+    public async ValueTask Warmup(CancellationToken cancellationToken = default)
     {
         var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
         using (source)
-            return _scriptInitializer.Init(linked);
+            await _scriptInitializer.Init(linked);
     }
 
     public async ValueTask<ScreenInfoDto> Get(CancellationToken cancellationToken = default)
