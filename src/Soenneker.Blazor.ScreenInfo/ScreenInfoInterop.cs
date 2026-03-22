@@ -30,9 +30,9 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
         _scriptInitializer = new AsyncInitializer(InitializeScript);
     }
 
-    private ValueTask InitializeScript(CancellationToken token)
+    private async ValueTask InitializeScript(CancellationToken token)
     {
-        return _resourceLoader.ImportModuleAndWaitUntilAvailable(_modulePath, _moduleNamespace, 100, token);
+        _ = await _resourceLoader.ImportModule(_modulePath, token);
     }
 
     public async ValueTask Warmup(CancellationToken cancellationToken = default)
