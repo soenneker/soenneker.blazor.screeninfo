@@ -1,10 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using Soenneker.Asyncs.Initializers;
 using Soenneker.Blazor.ScreenInfo.Abstract;
 using Soenneker.Blazor.ScreenInfo.Dtos;
-using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
+using Soenneker.Blazor.Utils.ModuleImport.Abstract;
 using Soenneker.Extensions.CancellationTokens;
 using Soenneker.Utils.CancellationScopes;
 
@@ -13,51 +12,39 @@ namespace Soenneker.Blazor.ScreenInfo;
 ///<inheritdoc cref="IScreenInfoInterop"/>
 public sealed class ScreenInfoInterop : IScreenInfoInterop
 {
-    private readonly IJSRuntime _jsRuntime;
-    private readonly IResourceLoader _resourceLoader;
+    private readonly IModuleImportUtil _moduleImportUtil;
 
-    private readonly AsyncInitializer _scriptInitializer;
-
-    private const string _modulePath = "Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
-    private const string _moduleNamespace = "ScreenInfoInterop";
+    private const string _modulePath = "/_content/Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
 
     private readonly CancellationScope _cancellationScope = new();
 
-    public ScreenInfoInterop(IJSRuntime jSRuntime, IResourceLoader resourceLoader)
+    public ScreenInfoInterop(IModuleImportUtil moduleImportUtil)
     {
-        _jsRuntime = jSRuntime;
-        _resourceLoader = resourceLoader;
-        _scriptInitializer = new AsyncInitializer(InitializeScript);
-    }
-
-    private async ValueTask InitializeScript(CancellationToken token)
-    {
-        _ = await _resourceLoader.ImportModule(_modulePath, token);
+        _moduleImportUtil = moduleImportUtil;
     }
 
     public async ValueTask Warmup(CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
-            await _scriptInitializer.Init(linked);
+            _ = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
     }
 
     public async ValueTask<ScreenInfoDto> Get(CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
-            await _scriptInitializer.Init(linked);
-            return await _jsRuntime.InvokeAsync<ScreenInfoDto>("ScreenInfoInterop.get", linked);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            return await module.InvokeAsync<ScreenInfoDto>("get", linked);
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _resourceLoader.DisposeModule(_modulePath);
-        await _scriptInitializer.DisposeAsync();
+        await _moduleImportUtil.DisposeContentModule(_modulePath);
         await _cancellationScope.DisposeAsync();
     }
 }
