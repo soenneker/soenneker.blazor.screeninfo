@@ -14,7 +14,7 @@ public sealed class ScreenInfoInterop : IScreenInfoInterop
 {
     private readonly IModuleImportUtil _moduleImportUtil;
 
-    private const string _modulePath = "/_content/Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
+    private const string _modulePath = "_content/Soenneker.Blazor.ScreenInfo/js/screeninfointerop.js";
 
     private readonly CancellationScope _cancellationScope = new();
 
