@@ -1,20 +1,19 @@
 using Soenneker.Blazor.ScreenInfo.Abstract;
-using Soenneker.Tests.FixturedUnit;
-using Xunit;
+using Soenneker.Tests.HostedUnit;
 
 namespace Soenneker.Blazor.ScreenInfo.Tests;
 
-[Collection("Collection")]
-public class ScreenInfoInteropTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class ScreenInfoInteropTests : HostedUnitTest
 {
     private readonly IScreenInfoInterop _interop;
 
-    public ScreenInfoInteropTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public ScreenInfoInteropTests(Host host) : base(host)
     {
         _interop = Resolve<IScreenInfoInterop>(true);
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
 
