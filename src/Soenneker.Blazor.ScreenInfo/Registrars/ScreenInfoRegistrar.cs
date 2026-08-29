@@ -11,10 +11,10 @@ namespace Soenneker.Blazor.ScreenInfo.Registrars;
 public static class ScreenInfoRegistrar
 {
     /// <summary>
-    /// Adds screen info interop as scoped.
+    /// Registers Screen Info Interop with a scoped lifetime.
     /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <returns>The result of the operation.</returns>
+    /// <param name="services">Service collection that receives the registration.</param>
+    /// <returns>The same service collection, so additional registrations can be chained.</returns>
     public static IServiceCollection AddScreenInfoInteropAsScoped(this IServiceCollection services)
     {
         services.AddModuleImportUtilAsScoped().TryAddScoped<IScreenInfoInterop, ScreenInfoInterop>();

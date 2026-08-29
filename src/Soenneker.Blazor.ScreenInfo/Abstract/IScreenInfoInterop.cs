@@ -11,14 +11,16 @@ namespace Soenneker.Blazor.ScreenInfo.Abstract;
 public interface IScreenInfoInterop : IAsyncDisposable
 {
     /// <summary>
-    /// Executes the warmup operation.
+    /// Warms up screen info for the screen info.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when warmup is complete.</returns>
     ValueTask Warmup(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves screen information such as width, height, pixel ratio, orientation, and user agent.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task whose result is the requested screen Info Dto.</returns>
     ValueTask<ScreenInfoDto> Get(CancellationToken cancellationToken = default);
 }
