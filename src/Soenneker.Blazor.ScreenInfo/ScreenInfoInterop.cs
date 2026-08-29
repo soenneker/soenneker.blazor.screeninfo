@@ -9,7 +9,7 @@ using Soenneker.Utils.CancellationScopes;
 
 namespace Soenneker.Blazor.ScreenInfo;
 
-///<inheritdoc cref="IScreenInfoInterop"/>
+/// <inheritdoc cref="IScreenInfoInterop"/>
 public sealed class ScreenInfoInterop : IScreenInfoInterop
 {
     private readonly IModuleImportUtil _moduleImportUtil;
