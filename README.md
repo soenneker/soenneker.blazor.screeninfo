@@ -5,47 +5,66 @@
 
 # Soenneker.Blazor.ScreenInfo
 
-Defines the screen info interop contract.
+A small Blazor JS interop library for reading the browser's current viewport, orientation, pixel ratio, touch support, and user agent.
 
-## Install
+## Installation
 
 ```bash
 dotnet add package Soenneker.Blazor.ScreenInfo
 ```
 
-## Quick start
+Register the interop service in `Program.cs`:
 
 ```csharp
 using Soenneker.Blazor.ScreenInfo.Registrars;
-using Microsoft.Extensions.DependencyInjection;
 
-var services = new ServiceCollection();
-var result = services.AddScreenInfoInteropAsScoped();
+builder.Services.AddScreenInfoInteropAsScoped();
 ```
 
-Registers Screen Info Interop with a scoped lifetime.
+## Usage
 
-## What you get
+Inject `IScreenInfoInterop` into an interactive component and call `Get()` after the component is rendered:
 
-- `IScreenInfoInterop` — Defines the screen info interop contract.
-- `ScreenInfoRegistrar` — Represents the screen info registrar.
-- `ScreenInfoDto` — Represents the screen info dto record.
+```razor
+@using Soenneker.Blazor.ScreenInfo.Abstract
+@using Soenneker.Blazor.ScreenInfo.Dtos
+@inject IScreenInfoInterop ScreenInfo
 
-## API at a glance
+<p>Viewport: @_screenInfo?.Width × @_screenInfo?.Height</p>
+<p>Orientation: @_screenInfo?.Orientation</p>
 
-| API | What it does | Result / important behavior |
-| --- | --- | --- |
-| `IScreenInfoInterop.Get(cancellationToken)` | Retrieves screen information such as width, height, pixel ratio, orientation, and user agent. | A task whose result is the requested screen Info Dto. |
-| `ScreenInfoRegistrar.AddScreenInfoInteropAsScoped(services)` | Registers Screen Info Interop with a scoped lifetime. | The same service collection, so additional registrations can be chained. |
-| `ScreenInfoDto.Width` | Gets or sets width. | Gets or sets width. |
-| `ScreenInfoDto.Height` | Gets or sets height. | Gets or sets height. |
-| `ScreenInfoDto.DevicePixelRatio` | Gets or sets device pixel ratio. | Gets or sets device pixel ratio. |
-| `ScreenInfoDto.IsLandscape` | Gets or sets a value indicating whether the instance is landscape. | Gets or sets a value indicating whether the instance is landscape. |
-| `ScreenInfoDto.Orientation` | Gets or sets orientation. | Gets or sets orientation. |
-| `ScreenInfoDto.IsTouchDevice` | Gets or sets a value indicating whether the instance is touch device. | Gets or sets a value indicating whether the instance is touch device. |
-| `ScreenInfoDto.UserAgent` | Gets or sets user agent. | Gets or sets user agent. |
+@code {
+    private ScreenInfoDto? _screenInfo;
 
-## Practical notes
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
 
-- Cancellation stops pending work; it does not undo work that has already completed.
-- Dispose instances you own when their scope ends so held resources can be released.
+        _screenInfo = await ScreenInfo.Get();
+        StateHasChanged();
+    }
+}
+```
+
+`Get()` returns a snapshot. It does not subscribe to resize or orientation events, so call it again whenever your application needs refreshed values.
+
+## Returned values
+
+| Property | Meaning |
+| --- | --- |
+| `Width`, `Height` | Current browser viewport dimensions in CSS pixels, not the physical display resolution. |
+| `DevicePixelRatio` | Ratio between device pixels and CSS pixels. |
+| `IsLandscape` | `true` when the viewport width is greater than its height. |
+| `Orientation` | The Screen Orientation API value when available; otherwise `landscape` or `portrait`. |
+| `IsTouchDevice` | A best-effort check based on touch events and `navigator.maxTouchPoints`. |
+| `UserAgent` | The browser-provided user-agent string. |
+
+`Warmup()` can be used to load the JavaScript module before the first `Get()` call when avoiding first-use import latency matters.
+
+## Browser and security notes
+
+- Browser interop is unavailable during static server rendering or prerendering. Call the service only after an interactive render.
+- Touch detection does not prove that touch is the user's primary input method. Design controls to work with mouse, keyboard, and touch.
+- User-agent strings can be reduced, spoofed, or changed. Do not use `UserAgent` for authorization, security decisions, or capability detection.
+- Screen and user-agent data can contribute to browser fingerprinting. Collect or transmit it only when your privacy policy permits it.
